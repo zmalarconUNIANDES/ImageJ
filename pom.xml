@@ -24,7 +24,15 @@
       </plugin>
     </plugins>
   </build>
-  <properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+    <properties>
     <sonar.organization>zmalarconuniandes</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>

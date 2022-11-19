@@ -2,6 +2,7 @@ package ij;
 import java.awt.*;
 import java.awt.image.*;
 import ij.process.*;
+import org.jetbrains.annotations.NotNull;
 
 /**
 This class represents an expandable array of images.
@@ -163,8 +164,6 @@ public class ImageStack {
 	public void deleteSlice(int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
-		if (nSlices<1)
-			return;
 		for (int i=n; i<nSlices; i++) {
 			stack[i-1] = stack[i];
 			label[i-1] = label[i];
@@ -283,16 +282,22 @@ public class ImageStack {
 		if (shortLabel==null) return null;
     	int newline = shortLabel.indexOf('\n');
     	if (newline==0) return null;
-    	if (newline>0)
-    		shortLabel = shortLabel.substring(0, newline);
-    	int len = shortLabel.length();
-		if (len>4 && shortLabel.charAt(len-4)=='.' && !Character.isDigit(shortLabel.charAt(len-1)))
-			shortLabel = shortLabel.substring(0,len-4);
+		shortLabel = getString(shortLabel, newline);
 		if (shortLabel.length()>max)
 			shortLabel = shortLabel.substring(0, max);
 		return shortLabel;
 	}
-	
+
+	@NotNull
+	public static String getString(String shortLabel, int newline) {
+		if (newline>0)
+			shortLabel = shortLabel.substring(0, newline);
+		int len = shortLabel.length();
+		if (len>4 && shortLabel.charAt(len-4)=='.' && !Character.isDigit(shortLabel.charAt(len-1)))
+			shortLabel = shortLabel.substring(0,len-4);
+		return shortLabel;
+	}
+
 	/** Sets the label of the specified slice, where {@literal 1<=n<=nslices}. */
 	public void setSliceLabel(String label, int n) {
 		if (n<1 || n>nSlices)
@@ -308,8 +313,6 @@ public class ImageStack {
 		ImageProcessor ip;
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
-		if (nSlices==0)
-			return null;
 		if (stack[n-1]==null)
 			throw new IllegalArgumentException("Pixel array is null");
 		if (stack[n-1] instanceof byte[])
@@ -326,7 +329,7 @@ public class ImageStack {
 		else
 			throw new IllegalArgumentException("Unknown stack type");
 		ip.setPixels(stack[n-1]);
-		if (min!=Double.MAX_VALUE && ip!=null && !(ip instanceof ColorProcessor))
+		if (min != Double.MAX_VALUE && !(ip instanceof ColorProcessor))
 			ip.setMinAndMax(min, max);
 		if (cTable!=null)
 			ip.setCalibrationTable(cTable);
@@ -416,7 +419,7 @@ public class ImageStack {
 					return floats[y*width+x];
 				case 24:
 					int[] ints = (int[])stack[z];
-					return ints[y*width+x]&0xffffffff;
+					return ints[y * width + x];
 				default: return Double.NaN;
 			}
 		} else
@@ -483,7 +486,7 @@ public class ImageStack {
 						case 24:
 							int[] ints = (int[])stack[z];
 							for (int x=x0; x<x0+w; x++)
-								voxels[i++] = ints[y*width+x]&0xffffffff;
+								voxels[i++] = ints[y * width + x];
 							break;
 						default:
 							for (int x=x0; x<x0+w; x++)
@@ -509,7 +512,7 @@ public class ImageStack {
 			int[] ints = (int[])stack[z];
 			for (int y=y0; y<y0+h; y++) {
 				for (int x=x0; x<x0+w; x++) {
-					int value = inBounds?ints[y*width+x]&0xffffffff:(int)getVoxel(x, y, z);
+					int value = inBounds? ints[y * width + x] :(int)getVoxel(x, y, z);
 					switch (channel) {
 						case 0: value=(value&0xff0000)>>16; break;
 						case 1: value=(value&0xff00)>>8; break;
@@ -525,8 +528,6 @@ public class ImageStack {
 	/** Experimental */
 	public void setVoxels(int x0, int y0, int z0, int w, int h, int d, float[] voxels) {
 		boolean inBounds = x0>=0 && x0+w<=width && y0>=0 && y0+h<=height && z0>=0 && z0+d<=nSlices;
-		if (voxels==null || voxels.length!=w*h*d)
-			;
 		int i = 0;
 		float value;
 		for (int z=z0; z<z0+d; z++) {
@@ -585,14 +586,12 @@ public class ImageStack {
 			return;
 		}
 		boolean inBounds = x0>=0 && x0+w<=width && y0>=0 && y0+h<=height && z0>=0 && z0+d<=nSlices;
-		if (voxels==null || voxels.length!=w*h*d)
-			;
 		int i = 0;
 		for (int z=z0; z<z0+d; z++) {
 			int[] ints = (int[])stack[z];
 			for (int y=y0; y<y0+h; y++) {
 				for (int x=x0; x<x0+w; x++) {
-					int value = inBounds?ints[y*width+x]&0xffffffff:(int)getVoxel(x, y, z);
+					int value = inBounds? ints[y * width + x] :(int)getVoxel(x, y, z);
 					int color = (int)voxels[i++];
 					switch (channel) {
 						case 0: value=(value&0xff00ffff) | ((color&0xff)<<16); break;
@@ -608,28 +607,6 @@ public class ImageStack {
 		}
 	}
 
-	/** Experimental */
-	public void drawSphere(double radius, int xc, int yc, int zc) {
-		int diameter = (int)Math.round(radius*2);
-	    double r = radius;
-		int xmin=(int)(xc-r+0.5), ymin=(int)(yc-r+0.5), zmin=(int)(zc-r+0.5);
-		int xmax=xmin+diameter, ymax=ymin+diameter, zmax=zmin+diameter;
-		double r2 = r*r;
-		r -= 0.5;
-		double xoffset=xmin+r, yoffset=ymin+r, zoffset=zmin+r;
-		double xx, yy, zz;
-		for (int x=xmin; x<=xmax; x++) {
-			for (int y=ymin; y<=ymax; y++) {
-				for (int z=zmin; z<=zmax; z++) {
-					xx = x-xoffset; yy = y-yoffset;  zz = z-zoffset;
-					if (xx*xx+yy*yy+zz*zz<=r2)
-						setVoxel(x, y, z, 255);
-				}
-			}
-		}
-	}
-
-	
 	/** Returns the bit depth (8=byte, 16=short, 24=RGB, 32=float). */
 	public int getBitDepth() {
 		if (this.bitDepth==0 && stack!=null && stack.length>0)
@@ -662,15 +639,15 @@ public class ImageStack {
 	 public static ImageStack create(ImagePlus[] images) {
 		int w = 0;
 		int h = 0;
-		for (int i=0; i<images.length; i++) {
-			if (images[i].getWidth()>w) w=images[i].getWidth();
-			if (images[i].getHeight()>h) h=images[i].getHeight();
-		}
+		 for (ImagePlus image : images) {
+			 if (image.getWidth() > w) w = image.getWidth();
+			 if (image.getHeight() > h) h = image.getHeight();
+		 }
 		ImageStack stack =  new ImageStack(w, h);
 		stack.init(w, h);
-		for (int i=0; i<images.length; i++) {
-			stack.addSlice(images[i].getProcessor());
-		}
+		 for (ImagePlus image : images) {
+			 stack.addSlice(image.getProcessor());
+		 }
 		int depth = images[0].getBitDepth();
 		if (depth==16 || depth==32) {
 			stack.min = Double.MAX_VALUE;

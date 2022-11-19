@@ -325,17 +325,6 @@ public class Prefs {
 		return null;
 	}
 
-	/*
-	static void dumpPrefs() {
-		System.out.println("");
-		Enumeration e = ijPrefs.keys();
-		while (e.hasMoreElements()) {
-			String key = (String) e.nextElement();
-			System.out.println(key+": "+ijPrefs.getProperty(key));
-		}
-	}
-	*/
-
 	static String loadAppletProps(InputStream f, Applet applet) {
 		if (f==null)
 			return PROPS_NAME+" not found in ij.jar";
@@ -446,11 +435,6 @@ public class Prefs {
 			return getString(DIR_IMAGE);
 	}
 
-	/** Returns the file.separator system property. */
-	public static String getFileSeparator() {
-		return separator;
-	}
-
 	/** Opens the ImageJ preferences file ("IJ_Prefs.txt") file. */
 	static void loadPreferences() {
 		String path = getPrefsDir()+separator+PREFS_NAME;
@@ -544,7 +528,6 @@ public class Prefs {
 			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0)+BLACK_BACKGROUND;
 		int options = getInt(OPTIONS, defaultOptions);
 		usePointerCursor = (options&USE_POINTER)!=0;
-		//antialiasedText = (options&ANTIALIASING)!=0;
 		antialiasedText = false;
 		interpolateScaledImages = (options&INTERPOLATE)!=0;
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
@@ -553,7 +536,6 @@ public class Prefs {
 		weightedColor = (options&WEIGHTED)!=0;
 		if (weightedColor)
 			ColorProcessor.setWeightingFactors(0.299, 0.587, 0.114);
-		blackCanvas = (options&BLACK_CANVAS)!=0;
 		requireControlKey = (options&REQUIRE_CONTROL)!=0;
 		useInvertingLut = (options&USE_INVERTING_LUT)!=0;
 		intelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
@@ -566,8 +548,6 @@ public class Prefs {
 		multiPointMode = (options&MULTI_POINT_MODE)!=0;
 		rotateYZ = (options&ROTATE_YZ)!=0;
 		flipXZ = (options&FLIP_XZ)!=0;
-		//dontSaveHeaders = (options&DONT_SAVE_HEADERS)!=0;
-		//dontSaveRowNumbers = (options&DONT_SAVE_ROW_NUMBERS)!=0;
 		noClickToGC = (options&NO_CLICK_TO_GC)!=0;
 		avoidResliceInterpolation = (options&AVOID_RESLICE_INTERPOLATION)!=0;
 		keepUndoBuffers = (options&KEEP_UNDO_BUFFERS)!=0;
@@ -575,8 +555,6 @@ public class Prefs {
 		defaultOptions = (!IJ.isMacOSX()?USE_FILE_CHOOSER:0);
 		int options2 = getInt(OPTIONS2, defaultOptions);
 		useSystemProxies = (options2&USE_SYSTEM_PROXIES)!=0;
-		useFileChooser = (options2&USE_FILE_CHOOSER)!=0;
-		subPixelResolution = (options2&SUBPIXEL_RESOLUTION)!=0;
 		enhancedLineTool = (options2&ENHANCED_LINE_TOOL)!=0;
 		skipRawDialog = (options2&SKIP_RAW_DIALOG)!=0;
 		reverseNextPreviousOrder = (options2&REVERSE_NEXT_PREVIOUS_ORDER)!=0;
@@ -599,9 +577,6 @@ public class Prefs {
 			+ (useInvertingLut?USE_INVERTING_LUT:0)
 			+ (intelByteOrder?INTEL_BYTE_ORDER:0) + (doubleBuffer?DOUBLE_BUFFER:0)
 			+ (noPointLabels?NO_POINT_LABELS:0) + (noBorder?NO_BORDER:0)
-			+ (showAllSliceOnly?SHOW_ALL_SLICE_ONLY:0) + (copyColumnHeaders?COPY_HEADERS:0)
-			+ (noRowNumbers?NO_ROW_NUMBERS:0) + (moveToMisc?MOVE_TO_MISC:0)
-			+ (runSocketListener?RUN_SOCKET_LISTENER:0)
 			+ (multiPointMode?MULTI_POINT_MODE:0) + (rotateYZ?ROTATE_YZ:0)
 			+ (flipXZ?FLIP_XZ:0) + (dontSaveHeaders?DONT_SAVE_HEADERS:0)
 			+ (dontSaveRowNumbers?DONT_SAVE_ROW_NUMBERS:0) + (noClickToGC?NO_CLICK_TO_GC:0)
@@ -609,8 +584,7 @@ public class Prefs {
 			+ (keepUndoBuffers?KEEP_UNDO_BUFFERS:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 
-		int options2 = (useSystemProxies?USE_SYSTEM_PROXIES:0)
-			+ (useFileChooser?USE_FILE_CHOOSER:0) + (subPixelResolution?SUBPIXEL_RESOLUTION:0)
+		int options2 = (useFileChooser?USE_FILE_CHOOSER:0) + (subPixelResolution?SUBPIXEL_RESOLUTION:0)
 			+ (enhancedLineTool?ENHANCED_LINE_TOOL:0) + (skipRawDialog?SKIP_RAW_DIALOG:0)
 			+ (reverseNextPreviousOrder?REVERSE_NEXT_PREVIOUS_ORDER:0)
 			+ (autoRunExamples?AUTO_RUN_EXAMPLES:0) + (showAllPoints?SHOW_ALL_POINTS:0)
@@ -773,7 +747,7 @@ public class Prefs {
 		if (props==null)
 			return defaultValue;
 		String s = props.getProperty(key);
-		Double d = null;
+		Double d;
 		if (s!=null) {
 			try {d = Double.valueOf(s);}
 			catch (NumberFormatException e){d = null;}
@@ -781,17 +755,6 @@ public class Prefs {
 				return(d.doubleValue());
 		}
 		return defaultValue;
-	}
-
-	/** Retrieves a boolean from IJ_Props or IJ_Prefs.txt.
-		Does not retrieve boolean set using Prefs.set(). */
-	public static boolean getBoolean(String key, boolean defaultValue) {
-		if (props==null) return defaultValue;
-		String s = props.getProperty(key);
-		if (s==null)
-			return defaultValue;
-		else
-			return s.equals("true");
 	}
 
 	/** Finds a color in IJ_Props or IJ_Prefs.txt. */

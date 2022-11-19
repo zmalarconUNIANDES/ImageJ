@@ -18,7 +18,7 @@ public class LookUpTable extends Object {
 			pg.grabPixels();
 			cm = pg.getColorModel();
 		}
-		catch (InterruptedException e){};
+		catch (InterruptedException ignored){};
 		getColors(cm);
 	}
 

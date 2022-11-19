@@ -318,10 +318,10 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	boolean saveContents() {
 		int lineCount = textPanel.getLineCount();
 		if (!textPanel.unsavedLines) lineCount = 0;
-		ImageJ ij = IJ.getInstance();
 		boolean macro = IJ.macroRunning() || Interpreter.isBatchMode();
 		boolean isResults = getTitle().contains("Results");
-		if (lineCount>0 && !macro && ij!=null && !ij.quitting() && isResults) {
+		Quitting ij = new Quitting();
+		if (lineCount > 0 && !macro && !ij.getQuitting() && isResults) {
 			YesNoCancelDialog d = new YesNoCancelDialog(this, getTitle(), "Save "+lineCount+" measurements?");
 			if (d.cancelPressed())
 				return false;

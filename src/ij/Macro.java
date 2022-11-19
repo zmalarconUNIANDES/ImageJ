@@ -1,13 +1,8 @@
 package ij;
-import ij.process.*;
-import ij.gui.*;
 import ij.io.*;
-import ij.measure.*;
-import ij.plugin.filter.*;
 import ij.macro.Interpreter;
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Locale;
 import java.util.Hashtable;
 
@@ -18,7 +13,7 @@ public class Macro {
 
 	// A table of Thread as keys and String as values, so  
 	// Macro options are local to each calling thread.
-	static private Hashtable table = new Hashtable();
+	static private final Hashtable<Thread, String> table = new Hashtable<Thread, String>();
 	static boolean abort;
 
 	public static boolean open(String path) {
@@ -157,16 +152,14 @@ public class Macro {
 	}
 	
 	public static String trimKey(String key) {
-		int index = key.indexOf(" ");
-		if (index>-1)
-			key = key.substring(0,index);
-		index = key.indexOf(":");
-		if (index>-1)
-			key = key.substring(0,index);
-		key = key.toLowerCase(Locale.US);
-		return key;
+		return getString(key);
 	}
-	
+
+	@NotNull
+	public static String getString(String key) {
+		return getString(key);
+	}
+
 	/** Evaluates 'code' and returns the output, or any error, 
 	 * as a String (e.g., Macro.eval("2+2") returns "4").	
 	*/

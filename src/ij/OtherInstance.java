@@ -1,9 +1,5 @@
 package ij;
 
-import ij.IJ;
-import ij.ImageJ;
-import ij.Prefs;
-
 import ij.io.OpenDialog;
 import ij.io.Opener;
 
@@ -18,6 +14,7 @@ import java.io.ObjectOutputStream;
 
 import java.lang.reflect.Method;
 
+import java.nio.file.Files;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -149,7 +146,7 @@ public class OtherInstance {
 				} else if (arg.startsWith("-run") && i+1<args.length) {
 					cmd = "run " + args[i+1];
 					args[i+1] = null;
-				} else if (arg.indexOf("ij.ImageJ")==-1 && !arg.startsWith("-"))
+				} else if (!arg.contains("ij.ImageJ") && !arg.startsWith("-"))
 					cmd = "open " + arg;
 				if (cmd!=null)
 					instance.sendArgument(cmd);
@@ -164,7 +161,6 @@ public class OtherInstance {
 		}
 		if (!new File(file).exists())
 			startServer();
-		//IJ.log("sendArguments: return false ");
 		return false;
 	}
 
@@ -202,8 +198,6 @@ public class OtherInstance {
 		if (System.getProperty("os.name").startsWith("Mac"))
 			return true;
 		Properties ijProps = loadPrefs();
-		if (ijProps==null)
-			return true;
 		int options = getInt(ijProps, OPTIONS);
 		if (options==-1)
 			return true;
@@ -214,7 +208,7 @@ public class OtherInstance {
 		String s = props.getProperty(key);
 		if (s!=null) {
 			try {
-				return Integer.decode(s).intValue();
+				return Integer.decode(s);
 			} catch (NumberFormatException e) {IJ.log(""+e);}
 		}
 		return -1;
@@ -224,7 +218,7 @@ public class OtherInstance {
 		Properties result = new Properties();
 		File file = new File(getPrefsDirectory(), "IJ_Prefs.txt");
 		try {
-			InputStream in = new BufferedInputStream(new FileInputStream(file));
+			InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()));
 			result.load(in);
 			in.close();
 		} catch (IOException e) { /* ignore */ }

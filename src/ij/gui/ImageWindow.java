@@ -324,11 +324,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				label = imp.getStack().getSliceLabel(1);
 			if (label!=null && label.length()>0) {
 				int newline = label.indexOf('\n');
-				if (newline>0)
-					label = label.substring(0, newline);
-				int len = label.length();
-				if (len>4 && label.charAt(len-4)=='.' && !Character.isDigit(label.charAt(len-1)))
-					label = label.substring(0,len-4);
+				label = ImageStack.getString(label, newline);
 				if (label.length()>60)
 					label = label.substring(0, 60)+"...";
 				s = "\""+label + "\"; ";
@@ -443,7 +439,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			yloc = 0;
 		}
 		WindowManager.removeWindow(this);
-		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks
+		Quitting ij = new Quitting();
+		if (ij.getQuitting())  // this may help avoid thread deadlocks
 			return true;
 		Rectangle bounds = getBounds();
 		if (initialLoc!=null && !bounds.equals(initialLoc) && !IJ.isMacro()
@@ -478,8 +475,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public void updateImage(ImagePlus imp) {
         if (imp!=this.imp)
             throw new IllegalArgumentException("imp!=this.imp");
-		this.imp = imp;
-        ic.updateImage(imp);
+		ic.updateImage(imp);
         setLocationAndSize(true);
         if (this instanceof StackWindow) {
         	StackWindow sw = (StackWindow)this;
@@ -584,8 +580,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 	
 	public void focusGained(FocusEvent e) {
-		if (!Interpreter.isBatchMode() && ij!=null && !ij.quitting() && imp!=null) {
-			//if (IJ.debugMode) IJ.log("focusGained: "+imp);
+		Quitting ij = new Quitting();
+		if (!Interpreter.isBatchMode() && !ij.getQuitting() && imp != null) {
 			WindowManager.setCurrentWindow(this);
 		}
 	}
@@ -596,11 +592,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			setImageJMenuBar(this);
 		if (imp==null)
 			return;
-		ImageJ ij = IJ.getInstance();
-		if (ij!=null && !closed && !ij.quitting() && !Interpreter.isBatchMode())
+		Quitting ij = new Quitting();
+		if (!closed && !ij.getQuitting() && !Interpreter.isBatchMode())
 			WindowManager.setCurrentWindow(this);
 		Roi roi = imp.getRoi();
-		if (roi!=null && (roi instanceof PointRoi))
+		if ((roi instanceof PointRoi))
 			PointToolOptions.update();
 		if (imp.isComposite())
 			Channels.updateChannels();
@@ -746,7 +742,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (mb!=null && mb==win.getMenuBar())
 			setMenuBar = false;
 		setMenuBarTime = 0L;
-		if (setMenuBar && ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning()) {
+		Quitting quitting = new Quitting();
+		if (setMenuBar && ij!=null && !quitting.getQuitting() && !Interpreter.nonBatchMacroRunning()) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			long t0 = System.currentTimeMillis();
 			win.setMenuBar(mb);

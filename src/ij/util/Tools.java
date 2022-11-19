@@ -26,18 +26,6 @@ import java.security.MessageDigest;
 		return new String(buf7);
 	}
 
-	/** Converts a float to an 9 byte hex string starting with '#'. */
-	public static String f2hex(float f) {
-		int i = Float.floatToIntBits(f);
-		char[] buf9 = new char[9];
-		buf9[0] = '#';
-		for (int pos=8; pos>=1; pos--) {
-			buf9[pos] = hexDigits[i&0xf];
-			i >>>= 4;
-		}
-		return new String(buf9);
-	}
-
 	/** Converts an int to a zero-padded hex string of fixed length 'digits'.
 	 *  If the number is too high, it gets truncated, keeping only the lowest 'digits' characters. */
 	public static String int2hex(int i, int digits) {
@@ -157,7 +145,7 @@ import java.security.MessageDigest;
 			return defaultValue;
 		try {
 			defaultValue = Double.parseDouble(s);
-		} catch (NumberFormatException e) {}
+		} catch (NumberFormatException ignored) {}
 		return defaultValue;
 	}
 
@@ -242,7 +230,7 @@ import java.security.MessageDigest;
 				v.addElement(line);
 			}
 			br.close();
-		} catch(Exception e) { }
+		} catch(Exception ignored) { }
 		String[] lines = new String[v.size()];
 		v.copyInto((String[])lines);
 		return lines;
@@ -256,8 +244,8 @@ import java.security.MessageDigest;
 		final Integer[] indexes = new Integer[n];
 		final Double[] data = new Double[n];
 		for (int i=0; i<n; i++) {
-			indexes[i] = Integer.valueOf(i);
-			data[i] = Double.valueOf(values[i]);
+			indexes[i] = i;
+			data[i] = values[i];
 		}
 		Arrays.sort(indexes, new Comparator<Integer>() {
 			public int compare(final Integer o1, final Integer o2) {
@@ -266,7 +254,7 @@ import java.security.MessageDigest;
 		});
 		int[] indexes2 = new int[n];
 		for (int i=0; i<n; i++)
-			indexes2[i] = indexes[i].intValue();
+			indexes2[i] = indexes[i];
 		return indexes2;
 	}
 
@@ -275,7 +263,7 @@ import java.security.MessageDigest;
 		int n = data.length;
 		final Integer[] indexes = new Integer[n];
 		for (int i=0; i<n; i++)
-			indexes[i] = Integer.valueOf(i);
+			indexes[i] = i;
 		Arrays.sort(indexes, new Comparator<Integer>() {
 			public int compare(final Integer o1, final Integer o2) {
 				return data[o1].compareToIgnoreCase(data[o2]);
@@ -283,7 +271,7 @@ import java.security.MessageDigest;
 		});
 		int[] indexes2 = new int[n];
 		for (int i=0; i<n; i++)
-			indexes2[i] = indexes[i].intValue();
+			indexes2[i] = indexes[i];
 		return indexes2;
 	}
 
@@ -393,8 +381,6 @@ import java.security.MessageDigest;
 		boolean hasQuotes = quote == '\'' || quote == '\"';
 		if (hasQuotes) start++;
 		String str = decodeEscaped(list.substring(start), hasQuotes ? quote : (char)-2);
-		if (str==null)
-			str = defaultValue;
 		return str;
 	}
 
@@ -414,7 +400,7 @@ import java.security.MessageDigest;
 					try {
 						c = (char)Integer.parseInt(str.substring(i+1, i+5), 16);
 						i += 4;
-					} catch (NumberFormatException e) {}
+					} catch (NumberFormatException ignored) {}
 				else
 					c = withBackslash(c);           // decodes backslash-t for tab etc.
 			}
@@ -464,14 +450,14 @@ import java.security.MessageDigest;
 
 			return bytesToHex(encodedhash);
 
-		} catch (Exception e) {}
+		} catch (Exception ignored) {}
 		return "0";
 	}
 
 	private static String bytesToHex(byte[] hash) {
 		StringBuilder hexString = new StringBuilder(2 * hash.length);
-		for (int i = 0; i < hash.length; i++) {
-			String hex = Integer.toHexString(0xff & hash[i]);
+		for (byte b : hash) {
+			String hex = Integer.toHexString(0xff & b);
 			if (hex.length() == 1) {
 				hexString.append('0');
 			}

@@ -937,9 +937,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int counter = systemRT.size();
 		int lineCount = tp!=null?IJ.getTextPanel().getLineCount():0;
 		ImageJ ij = IJ.getInstance();
+		Quitting qt = new Quitting();
 		boolean macro = (IJ.macroRunning()&&!switchingModes) || Interpreter.isBatchMode();
 		switchingModes = false;
-		if (counter>0 && lineCount>0 && unsavedMeasurements && !macro && ij!=null && !ij.quitting()) {
+		if (counter>0 && lineCount>0 && unsavedMeasurements && !macro && ij!=null && !qt.getQuitting()) {
 			YesNoCancelDialog d = new YesNoCancelDialog(ij, "ImageJ", "Save "+counter+" measurements?");
 			if (d.cancelPressed())
 				return false;

@@ -18,7 +18,7 @@ public class Executer implements Runnable {
 
 	private static String previousCommand;
 	private static CommandListener listener;
-	private static Vector listeners = new Vector();
+	private static final Vector<CommandListener> listeners = new Vector<CommandListener>();
 
 	private String command;
 	private Thread thread;
@@ -56,7 +56,7 @@ public class Executer implements Runnable {
 			return;
 		if (listeners.size()>0) synchronized (listeners) {
 			for (int i=0; i<listeners.size(); i++) {
-				CommandListener listener = (CommandListener)listeners.elementAt(i);
+				CommandListener listener = listeners.elementAt(i);
 				command = listener.commandExecuting(command);
 				if (command==null) return;
 			}
@@ -79,8 +79,6 @@ public class Executer implements Runnable {
 			String msg = e.getMessage();
 			if (e instanceof OutOfMemoryError)
 				IJ.outOfMemory(command);
-			else if (e instanceof RuntimeException && msg!=null && msg.equals(Macro.MACRO_CANCELED))
-				; //do nothing
 			else {
 				CharArrayWriter caw = new CharArrayWriter();
 				PrintWriter pw = new PrintWriter(caw);
@@ -92,20 +90,20 @@ public class Executer implements Runnable {
 					s = Tools.fixNewLines(s);
 				}
 				int w=500, h=340;
-				if (s.indexOf("UnsupportedClassVersionError")!=-1) {
-					if (s.indexOf("version 49.0")!=-1) {
+				if (s.contains("UnsupportedClassVersionError")) {
+					if (s.contains("version 49.0")) {
 						s = e + "\n \nThis plugin requires Java 1.5 or later.";
 						w=700; h=150;
 					}
-					if (s.indexOf("version 50.0")!=-1) {
+					if (s.contains("version 50.0")) {
 						s = e + "\n \nThis plugin requires Java 1.6 or later.";
 						w=700; h=150;
 					}
-					if (s.indexOf("version 51.0")!=-1) {
+					if (s.contains("version 51.0")) {
 						s = e + "\n \nThis plugin requires Java 1.7 or later.";
 						w=700; h=150;
 					}
-					if (s.indexOf("version 52.0")!=-1) {
+					if (s.contains("version 52.0")) {
 						s = e + "\n \nThis plugin requires Java 1.8 or later.";
 						w=700; h=150;
 					}
@@ -123,8 +121,8 @@ public class Executer implements Runnable {
 	}
 
 	void runCommand(String cmd) {
-		Hashtable table = Menus.getCommands();
-		String className = (String)table.get(cmd);
+		Hashtable<String, String> table = Menus.getCommands();
+		String className = table.get(cmd);
 		if (className!=null) {
 			String arg = "";
 			if (className.endsWith("\")")) {
@@ -165,9 +163,9 @@ public class Executer implements Runnable {
 				if (Editor.openExample(cmd))		
 					return;
 			}
-			if ("Auto Threshold".equals(cmd)&&(String)table.get("Auto Threshold...")!=null)
+			if ("Auto Threshold".equals(cmd)&& table.get("Auto Threshold...") !=null)
 				runCommand("Auto Threshold...");
-			else if ("Enhance Local Contrast (CLAHE)".equals(cmd)&&(String)table.get("CLAHE ")!=null)
+			else if ("Enhance Local Contrast (CLAHE)".equals(cmd)&& table.get("CLAHE ") !=null)
 				runCommand("CLAHE ");
 			else {
 				if ("Table...".equals(cmd))

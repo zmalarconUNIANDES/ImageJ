@@ -20,7 +20,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public static final char commandPrefix = '^';
 	static final String commandPrefixS = "^";
 	static final int MACROS_MENU_COMMANDS = 7; // number of commands in Plugins>Macros submenu
-	
+	private static String commandName;
+
 	private ArrayList<String> macroNames = new ArrayList();
 	private ArrayList<Integer> macroStarts = new ArrayList();
 	private MenuBar mb = new MenuBar();
@@ -510,13 +511,13 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
 	public void runMacro(String name, Editor editor) {
 		if (anonymousName!=null && name.equals(anonymousName)) {
-			ImageJ.setCommandName(name);
+			setCommandName(name);
 			new MacroRunner(pgm, 0, anonymousName, editor);
 			return;
 		}
 		for (int i=0; i<macroNames.size(); i++)
 			if (name.equals(macroNames.get(i))) {
-				ImageJ.setCommandName(name);
+				setCommandName(name);
 				Interpreter.abort(); // abort any currently running macro
 				new MacroRunner(pgm, macroStarts.get(i), name, editor);
 				return;
@@ -548,7 +549,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	
 	public void actionPerformed(ActionEvent evt) {
 		String cmd = evt.getActionCommand();
-		ImageJ.setCommandName(cmd);
+		setCommandName(cmd);
 		MenuItem item = (MenuItem)evt.getSource();
 		MenuContainer parent = item.getParent();
 		if (parent instanceof PopupMenu) {
@@ -578,6 +579,14 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	
 	public String toString() {
 		return ("MacroInstaller[size="+macroNames.size()+(macroNames.size()>0?","+macroNames.get(0):"")+"]");
+	}
+
+	public static void setCommandName(String name) {
+		commandName = name;
+	}
+
+	public static String getCommandName() {
+		return commandName!=null?commandName:"null";
 	}
 
 } 

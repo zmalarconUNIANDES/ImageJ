@@ -1641,7 +1641,7 @@ public class Functions implements MacroConstants, Measurements {
 			String lowercaseKey = key.toLowerCase(Locale.US);
 			int len = lowercaseKey.length();
 			if (lowercaseKey.equals("command.name")) {
-				return ImageJ.getCommandName();
+				return MacroInstaller.getCommandName();
 			} else if (lowercaseKey.equals("overlay")) {
 				Overlay overlay = getImage().getOverlay();
 				if (overlay==null)
